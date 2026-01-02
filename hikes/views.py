@@ -46,26 +46,30 @@ def home(request):
 
 def hike_detail(request, hike_id):
     """Детальная страница маршрута"""
+    from hikes.services.weather_service import WeatherService, ParkingService, RouteAnalyzer
+    
+    # Получаем маршрут с аннотациями
     hike = get_object_or_404(
         HikeRoute.objects.annotate(
             avg_rating=Avg('reviews__rating'),
-            reviews_count=Count('reviews')
+            reviews_count=Count('reviews'),
+            favorites_count=Count('favorited_by')
         ),
         id=hike_id
     )
     
-    # Получаем точки интереса для этого маршрута
+    # Получаем точки интереса
     points = hike.points_of_interest.all()
     
     # Получаем отзывы
-    reviews = hike.reviews.all().order_by('-created_at')[:10]
+    reviews = hike.reviews.all().select_related('user').order_by('-created_at')[:10]
     
     # Проверяем, оставлял ли текущий пользователь отзыв
     user_review = None
     if request.user.is_authenticated:
         user_review = Review.objects.filter(route=hike, user=request.user).first()
     
-    # Форма для отзыва (если пользователь еще не оставлял)
+    # Форма для отзыва
     review_form = None
     if request.user.is_authenticated and not user_review:
         if request.method == 'POST':
@@ -80,24 +84,52 @@ def hike_detail(request, hike_id):
         else:
             review_form = ReviewForm()
     
-    # Получаем последнюю проверку маршрута (данные API)
-    latest_check = hike.route_checks.order_by('-check_date').first()
+    # ====== API ИНТЕГРАЦИЯ ======
+    # 1. Получаем данные о погоде
+    weather_data = WeatherService.get_demo_weather_data(
+        hike.start_point_lat,
+        hike.start_point_lon
+    )
     
-    # Генерируем тестовые данные для графика (позже заменим на реальные из API)
-    weather_data = {
-        'labels': ['9:00', '12:00', '15:00', '18:00', '21:00'],
-        'temperatures': [15, 18, 20, 17, 14],
+    # 2. Получаем статус парковки
+    parking_data = ParkingService.get_parking_status(
+        hike.start_point_lat,
+        hike.start_point_lon
+    )
+    
+    # 3. Рассчитываем баллы
+    weather_score = WeatherService.get_weather_quality_score(weather_data)
+    analysis = RouteAnalyzer.calculate_overall_score(
+        hike, 
+        weather_score, 
+        parking_data['score']
+    )
+    
+    # 4. Подготавливаем данные для графика Plotly
+    chart_data = {
+        'labels': weather_data['forecast']['labels'],
+        'temperatures': weather_data['forecast']['temperatures'],
+        'precipitation': weather_data['forecast']['precipitation'],
     }
     
+    # Подготавливаем контекст
     context = {
         'hike': hike,
         'points': points,
         'reviews': reviews,
         'user_review': user_review,
         'review_form': review_form,
-        'latest_check': latest_check,
-        'weather_data': weather_data,
+        
+        # API данные
+        'weather': weather_data['current'],
+        'parking': parking_data,
+        'analysis': analysis,
+        'chart_data': chart_data,
+        
+        # Флаги для интерфейса
+        'is_favorited': request.user in hike.favorited_by.all() if request.user.is_authenticated else False,
     }
+    
     return render(request, 'hikes/hike_detail.html', context)
 
 

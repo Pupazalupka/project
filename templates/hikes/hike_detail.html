@@ -1,0 +1,29 @@
+<!-- УПРОЩЕННАЯ ВЕРСИЯ БЕЗ СЛОЖНОГО CSS -->
+{% extends "base.html" %}
+
+{% block title %}{{ hike.title }} - HikeWeather Advisor{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{{ hike.title }}</h1>
+    <p>{{ hike.description }}</p>
+    
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <h3>Прогноз погоды (API демо)</h3>
+            <div class="alert alert-info">
+                <p><strong>Температура:</strong> {{ weather.temperature }}°C</p>
+                <p><strong>Влажность:</strong> {{ weather.humidity }}%</p>
+                <p><strong>Ветер:</strong> {{ weather.wind_speed }} м/с</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <h3>Статус парковки (API демо)</h3>
+            <div class="alert alert-success">
+                <p><strong>Статус:</strong> {{ parking.status_text }}</p>
+                <p><strong>Балл:</strong> {{ parking.score }}/100</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

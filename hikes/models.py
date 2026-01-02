@@ -58,6 +58,12 @@ class HikeRoute(models.Model):
         verbose_name='Автор',
         related_name='hike_routes'
     )
+    favorited_by = models.ManyToManyField(
+        User,
+        related_name='favorite_hikes',
+        verbose_name='В избранном у',
+        blank=True
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата создания'
