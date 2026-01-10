@@ -4,85 +4,148 @@
 
 {% block content %}
 <div class="container mt-4">
-    <!-- Поиск и фильтры -->
+    <!-- 🎯 Приветственный блок -->
+    <div class="jumbotron bg-light p-5 rounded-3 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4">🌤️ Найдите идеальный день для похода!</h1>
+                <p class="lead mt-3">
+                    HikeWeather Advisor анализирует погодные условия, доступность парковок и сложность маршрутов, 
+                    чтобы помочь вам спланировать безопасное и комфортное путешествие.
+                </p>
+                <div class="mt-4">
+                    <a href="{% url 'recommendations' %}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-star"></i> Посмотреть рекомендации
+                    </a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'hike_create' %}" class="btn btn-success btn-lg">
+                        <i class="fas fa-plus-circle"></i> Добавить маршрут
+                    </a>
+                    {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-user-plus"></i> Присоединиться
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="bg-white p-4 rounded shadow">
+                    <h5><i class="fas fa-chart-line text-primary"></i> Активная статистика</h5>
+                    <p class="fs-1 mb-0">{{ page_obj.paginator.count }}</p>
+                    <p class="text-muted">маршрутов доступно</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔍 Поиск и фильтры -->
     <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-search"></i> Поиск маршрутов</h5>
+        </div>
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-6">
-                    <input type="text" class="form-control" name="search" 
-                           placeholder="Поиск маршрутов..." value="{{ search_query }}">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" name="search" 
+                               placeholder="Найти маршрут по названию или описанию..." 
+                               value="{{ search_query }}">
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <select class="form-select" name="difficulty">
-                        <option value="">Все сложности</option>
-                        <option value="easy" {% if difficulty_filter == 'easy' %}selected{% endif %}>Лёгкий</option>
-                        <option value="medium" {% if difficulty_filter == 'medium' %}selected{% endif %}>Средний</option>
-                        <option value="hard" {% if difficulty_filter == 'hard' %}selected{% endif %}>Сложный</option>
-                    </select>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-mountain"></i></span>
+                        <select class="form-select" name="difficulty">
+                            <option value="">Все уровни сложности</option>
+                            <option value="easy" {% if difficulty_filter == 'easy' %}selected{% endif %}>Лёгкий</option>
+                            <option value="medium" {% if difficulty_filter == 'medium' %}selected{% endif %}>Средний</option>
+                            <option value="hard" {% if difficulty_filter == 'hard' %}selected{% endif %}>Сложный</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary w-100">Найти</button>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter"></i> Найти
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Список маршрутов -->
-    <h2>Маршруты для походов</h2>
+    <!-- 📋 Список маршрутов -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>🗺️ Доступные маршруты</h2>
+        <span class="badge bg-secondary fs-6">{{ page_obj.paginator.count }} всего</span>
+    </div>
     
     {% if page_obj %}
         <div class="row">
             {% for hike in page_obj %}
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body">
-                        <h5 class="card-title">{{ hike.title }}</h5>
-                        <p class="card-text">{{ hike.description|truncatechars:150 }}</p>
-                        
-                        <div class="mb-2">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title text-primary">{{ hike.title }}</h5>
                             <span class="badge bg-{% if hike.difficulty == 'easy' %}success{% elif hike.difficulty == 'medium' %}warning{% else %}danger{% endif %}">
                                 {{ hike.get_difficulty_display }}
                             </span>
-                            <span class="badge bg-secondary ms-1">
-                                {{ hike.distance }} км
-                            </span>
-                            <span class="badge bg-info ms-1">
-                                {{ hike.duration }} ч
-                            </span>
                         </div>
+                        <p class="card-text text-muted">{{ hike.description|truncatechars:150 }}</p>
                         
-                        <div class="mb-3">
-                            <div class="rating-stars">
-                                {% with rating=hike.avg_rating|default:0 %}
-                                {% for i in "12345"|make_list %}
-                                    {% if forloop.counter <= rating %}
-                                        <i class="fas fa-star"></i>
-                                    {% else %}
-                                        <i class="far fa-star"></i>
-                                    {% endif %}
-                                {% endfor %}
-                                {% endwith %}
-                                <small class="text-muted">({{ hike.reviews_count }} отзывов)</small>
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <div class="border rounded p-2">
+                                    <div class="fw-bold">{{ hike.length_km  }} км</div>
+                                    <small class="text-muted">Дистанция</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border rounded p-2">
+                                    <div class="fw-bold">{{ hike.estimated_time_h }} ч</div>
+                                    <small class="text-muted">Время</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border rounded p-2">
+                                    <div class="fw-bold">{% if hike.avg_rating %}{{ hike.avg_rating|floatformat:1 }}{% else %}–{% endif %}</div>
+                                    <small class="text-muted">Рейтинг</small>
+                                </div>
                             </div>
                         </div>
                         
-                        <a href="{% url 'hike_detail' hike.id %}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-info-circle"></i> Подробнее
-                        </a>
+                        <div class="rating-stars mb-3">
+                            {% with rating=hike.avg_rating|default:0 %}
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= rating %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-muted"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <small class="text-muted ms-2">({{ hike.reviews_count }} отзывов)</small>
+                            {% endwith %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            <a href="{% url 'hike_detail' hike.id %}" class="btn btn-outline-primary">
+                                <i class="fas fa-info-circle"></i> Подробнее о маршруте
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
 
-        <!-- Пагинация -->
+        <!-- 📄 Пагинация -->
         {% if page_obj.has_other_pages %}
         <nav aria-label="Page navigation" class="mt-4">
             <ul class="pagination justify-content-center">
                 {% if page_obj.has_previous %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if difficulty_filter %}&difficulty={{ difficulty_filter }}{% endif %}">
-                        Назад
+                        <i class="fas fa-chevron-left"></i> Назад
                     </a>
                 </li>
                 {% endif %}
@@ -104,7 +167,7 @@
                 {% if page_obj.has_next %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if difficulty_filter %}&difficulty={{ difficulty_filter }}{% endif %}">
-                        Вперёд
+                        Вперёд <i class="fas fa-chevron-right"></i>
                     </a>
                 </li>
                 {% endif %}
@@ -113,10 +176,41 @@
         {% endif %}
         
     {% else %}
-        <div class="alert alert-info">
-            <h4>Маршрутов не найдено</h4>
-            <p>Попробуйте изменить параметры поиска или <a href="{% url 'hike_create' %}">добавьте первый маршрут</a>.</p>
+        <!-- 🚫 Сообщение если нет маршрутов -->
+        <div class="text-center py-5">
+            <div class="display-1 text-muted mb-4">
+                <i class="fas fa-mountain"></i>
+            </div>
+            <h3>Маршруты не найдены</h3>
+            <p class="text-muted mb-4">Попробуйте изменить параметры поиска или добавьте первый маршрут</p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'hike_create' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus-circle"></i> Добавить маршрут
+            </a>
+            {% else %}
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-user-plus"></i> Зарегистрируйтесь, чтобы добавить маршрут
+            </a>
+            {% endif %}
         </div>
     {% endif %}
 </div>
+
+<!-- 💅 Небольшие стили -->
+<style>
+    .jumbotron {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 5px solid #2c7873;
+    }
+    .card {
+        transition: all 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    .border {
+        border-color: #dee2e6 !important;
+    }
+</style>
 {% endblock %}
