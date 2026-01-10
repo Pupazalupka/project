@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Мои маршруты - HikeWeather Advisor{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-route text-primary"></i> Мои маршруты</h1>
+            <p class="lead text-muted">Здесь собраны все маршруты, которые вы создали</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-primary fs-5">{{ total_hikes }}</span>
+            <div class="text-muted">всего маршрутов</div>
+        </div>
+    </div>
+
+    <!-- Кнопка добавления -->
+    <div class="card mb-4 border-primary">
+        <div class="card-body text-center">
+            <h5 class="card-title">Добавить новый маршрут</h5>
+            <p class="card-text">Поделитесь своим любимым маршрутом с другими туристами</p>
+            <a href="{% url 'hike_create' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus-circle"></i> Создать новый маршрут
+            </a>
+        </div>
+    </div>
+
+    <!-- Список маршрутов -->
+    {% if page_obj %}
+        <div class="row">
+            {% for hike in page_obj %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 border-{% if hike.avg_rating >= 4 %}success{% elif hike.avg_rating >= 3 %}warning{% else %}light{% endif %}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title">{{ hike.title }}</h5>
+                            <span class="badge bg-secondary">{{ hike.get_difficulty_display }}</span>
+                        </div>
+                        
+                        <p class="card-text text-muted">{{ hike.description|truncatechars:120 }}</p>
+                        
+                        <!-- Статистика -->
+                        <div class="row text-center small mb-3">
+                            <div class="col-4">
+                                <div class="text-primary fw-bold">
+                                    {% if hike.length_km %}{{ hike.length_km }} км{% else %}-{% endif %}
+                                </div>
+                                <div class="text-muted">Дистанция</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-primary fw-bold">
+                                    {% if hike.estimated_time_h %}{{ hike.estimated_time_h }} ч{% else %}-{% endif %}
+                                </div>
+                                <div class="text-muted">Время</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-primary fw-bold">
+                                    {% if hike.avg_rating %}{{ hike.avg_rating|floatformat:1 }}{% else %}Нет{% endif %}
+                                </div>
+                                <div class="text-muted">Рейтинг</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Рейтинг и отзывы -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="rating-stars">
+                                {% with rating=hike.avg_rating|default:0 %}
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-muted"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <small class="text-muted ms-1">({{ hike.reviews_count }})</small>
+                                {% endwith %}
+                            </div>
+                            <span class="badge bg-info">
+                                {{ hike.favorited_by.count }} <i class="fas fa-heart"></i>
+                            </span>
+                        </div>
+                        
+                        <!-- Кнопки действий -->
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'hike_detail' hike.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye"></i> Просмотреть
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted small">
+                        Создан: {{ hike.created_at|date:"d.m.Y" }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                        <i class="fas fa-chevron-left"></i> Назад
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                        Вперёд <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+    {% else %}
+        <!-- Сообщение если нет маршрутов -->
+        <div class="text-center py-5">
+            <div class="display-1 text-muted mb-4">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <h3>У вас пока нет маршрутов</h3>
+            <p class="text-muted mb-4">Создайте свой первый маршрут и поделитесь им с сообществом</p>
+            <a href="{% url 'hike_create' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus-circle"></i> Создать первый маршрут
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

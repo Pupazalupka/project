@@ -323,18 +323,24 @@ def hike_create(request):
 
 
 @login_required
-def add_to_favorites(request, hike_id):
-    """Добавление маршрута в избранное"""
-    hike = get_object_or_404(HikeRoute, id=hike_id)
+def favorites(request):
+    """Страница избранных маршрутов"""
+    # Маршруты, добавленные в избранное
+    favorite_hikes = request.user.favorite_hikes.all().annotate(
+        avg_rating=Avg('reviews__rating'),
+        reviews_count=Count('reviews')
+    ).order_by('-created_at')
     
-    if request.user in hike.favorited_by.all():
-        hike.favorited_by.remove(request.user)
-        messages.info(request, 'Маршрут удален из избранного')
-    else:
-        hike.favorited_by.add(request.user)
-        messages.success(request, 'Маршрут добавлен в избранное!')
+    # Пагинация
+    paginator = Paginator(favorite_hikes, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     
-    return redirect('hike_detail', hike_id=hike.id)
+    context = {
+        'page_obj': page_obj,
+        'total_favorites': favorite_hikes.count(),
+    }
+    return render(request, 'hikes/favorites.html', context)
 
 
 def register(request):
@@ -381,3 +387,49 @@ def about(request):
     }
     
     return render(request, 'hikes/about.html', {'stats': stats})
+
+@login_required
+def my_hikes(request):
+    """Страница маршрутов текущего пользователя"""
+    # Маршруты, созданные пользователем
+    authored_hikes = HikeRoute.objects.filter(author=request.user).annotate(
+        avg_rating=Avg('reviews__rating'),
+        reviews_count=Count('reviews')
+    ).order_by('-created_at')
+    
+    # Пагинация
+    paginator = Paginator(authored_hikes, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'total_hikes': authored_hikes.count(),
+    }
+    return render(request, 'hikes/my_hikes.html', context)
+
+@login_required
+def toggle_favorite(request, hike_id):
+    """Добавить/удалить маршрут из избранного (AJAX/обычный)"""
+    hike = get_object_or_404(HikeRoute, id=hike_id)
+    
+    if request.user in hike.favorited_by.all():
+        hike.favorited_by.remove(request.user)
+        is_favorite = False
+        message = 'Маршрут удалён из избранного'
+    else:
+        hike.favorited_by.add(request.user)
+        is_favorite = True
+        message = 'Маршрут добавлен в избранное!'
+    
+    # Для AJAX запросов
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'is_favorite': is_favorite,
+            'message': message,
+            'favorites_count': hike.favorited_by.count()
+        })
+    
+    # Для обычных запросов
+    messages.info(request, message)
+    return redirect(request.META.get('HTTP_REFERER', 'home'))

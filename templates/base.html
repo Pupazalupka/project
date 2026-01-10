@@ -88,11 +88,11 @@
                                 <i class="fas fa-user"></i> {{ user.username }}
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">
-                                    <i class="fas fa-heart"></i> Избранное
-                                </a></li>
-                                <li><a class="dropdown-item" href="#">
+                                <li><a class="dropdown-item" href="{% url 'my_hikes' %}">
                                     <i class="fas fa-route"></i> Мои маршруты
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'favorites' %}">
+                                    <i class="fas fa-heart"></i> Избранное
                                 </a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'admin:index' %}">

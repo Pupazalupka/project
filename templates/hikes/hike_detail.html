@@ -26,4 +26,13 @@
         </div>
     </div>
 </div>
+<div class="mt-3">
+    <form method="post" action="{% url 'toggle_favorite' hike.id %}" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-{% if is_favorited %}danger{% else %}outline-danger{% endif %}">
+            <i class="fas fa-heart"></i>
+            {% if is_favorited %}Удалить из избранного{% else %}В избранное{% endif %}
+        </button>
+    </form>
+</div>
 {% endblock %}

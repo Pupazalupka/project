@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Избранное - HikeWeather Advisor{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-heart text-danger"></i> Избранное</h1>
+            <p class="lead text-muted">Ваша коллекция любимых маршрутов</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-danger fs-5">{{ total_favorites }}</span>
+            <div class="text-muted">в избранном</div>
+        </div>
+    </div>
+
+    <!-- Список избранных маршрутов -->
+    {% if page_obj %}
+        <div class="row">
+            {% for hike in page_obj %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-light text-dark">{{ hike.get_difficulty_display }}</span>
+                            <form method="post" action="{% url 'toggle_favorite' hike.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-light" title="Удалить из избранного">
+                                    <i class="fas fa-heart-broken"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ hike.title }}</h5>
+                        <p class="card-text text-muted">{{ hike.description|truncatechars:100 }}</p>
+                        
+                        <!-- Автор -->
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="fas fa-user"></i> Автор: {{ hike.author.username }}
+                            </small>
+                        </div>
+                        
+                        <!-- Статистика -->
+                        <div class="row text-center small mb-3">
+                            <div class="col-4">
+                                <div class="fw-bold">
+                                    {% if hike.length_km %}{{ hike.length_km }} км{% else %}-{% endif %}
+                                </div>
+                                <div class="text-muted">Дистанция</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold">
+                                    {% if hike.estimated_time_h %}{{ hike.estimated_time_h }} ч{% else %}-{% endif %}
+                                </div>
+                                <div class="text-muted">Время</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold text-warning">
+                                    {% if hike.avg_rating %}{{ hike.avg_rating|floatformat:1 }}{% else %}Нет{% endif %}
+                                </div>
+                                <div class="text-muted">Рейтинг</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Рейтинг -->
+                        <div class="rating-stars mb-3">
+                            {% with rating=hike.avg_rating|default:0 %}
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= rating %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-muted"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <small class="text-muted ms-1">({{ hike.reviews_count }} отзывов)</small>
+                            {% endwith %}
+                        </div>
+                        
+                        <!-- Кнопки -->
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'hike_detail' hike.id %}" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-info-circle"></i> Подробнее
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted small">
+                        Добавлено в избранное: {{ hike.created_at|timesince }} назад
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                        <i class="fas fa-chevron-left"></i> Назад
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                        Вперёд <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+    {% else %}
+        <!-- Сообщение если нет избранного -->
+        <div class="text-center py-5">
+            <div class="display-1 text-muted mb-4">
+                <i class="fas fa-heart-broken"></i>
+            </div>
+            <h3>Ваше избранное пусто</h3>
+            <p class="text-muted mb-4">Добавляйте понравившиеся маршруты в избранное, чтобы вернуться к ним позже</p>
+            <a href="{% url 'home' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-search"></i> Найти маршруты
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- JavaScript для AJAX добавления в избранное -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка формы избранного
+    const favoriteForms = document.querySelectorAll('form[action*="toggle-favorite"]');
+    
+    favoriteForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const url = this.action;
+            
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    // Показать сообщение
+                    alert(data.message);
+                    // Перезагрузить страницу
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Fallback: отправить форму обычным способом
+                this.submit();
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

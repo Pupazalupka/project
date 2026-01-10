@@ -9,5 +9,7 @@ urlpatterns = [
     
     path('hike/create/', views.hike_create, name='hike_create'),
     path('hike/<int:hike_id>/', views.hike_detail, name='hike_detail'),
-    path('hike/<int:hike_id>/favorite/', views.add_to_favorites, name='add_to_favorites'),
+    path('my-hikes/', views.my_hikes, name='my_hikes'),
+    path('favorites/', views.favorites, name='favorites'),
+    path('hike/<int:hike_id>/toggle-favorite/', views.toggle_favorite, name='toggle_favorite'),
 ]
