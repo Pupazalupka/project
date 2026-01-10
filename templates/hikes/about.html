@@ -1,57 +1,63 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block title %}О проекте - HikeWeather Advisor{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">О проекте HikeWeather Advisor</h1>
-        
-        <div class="card mb-4">
-            <div class="card-body">
-                <h3 class="card-title"><i class="fas fa-bullseye"></i> Цель проекта</h3>
-                <p class="card-text">
-                    Создание интеллектуального сервиса для планирования пеших походов, 
-                    который учитывает не только характеристики маршрута, но и актуальные 
-                    внешние условия: погоду, доступность парковок, сезонные особенности.
-                </p>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1>О проекте HikeWeather Advisor</h1>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h3 class="card-title">Что это такое?</h3>
+                    <p class="card-text">
+                        HikeWeather Advisor — это умный помощник для любителей пеших походов. 
+                        Мы объединяем данные о погоде, доступности парковок и сложности маршрутов, 
+                        чтобы предложить вам лучший вариант для похода.
+                    </p>
+                </div>
             </div>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-body">
-                <h3 class="card-title"><i class="fas fa-chart-line"></i> Статистика</h3>
-                <div class="row text-center">
-                    <div class="col-md-3">
-                        <h2 class="text-primary">{{ stats.total_hikes }}</h2>
-                        <p>маршрутов</p>
-                    </div>
-                    <div class="col-md-3">
-                        <h2 class="text-success">{{ stats.total_points }}</h2>
-                        <p>точек интереса</p>
-                    </div>
-                    <div class="col-md-3">
-                        <h2 class="text-warning">{{ stats.total_reviews }}</h2>
-                        <p>отзывов</p>
-                    </div>
-                    <div class="col-md-3">
-                        <h2 class="text-info">24/7</h2>
-                        <p>обновление данных</p>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h3 class="card-title">Статистика</h3>
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="display-4 text-primary">{{ stats.total_hikes }}</div>
+                            <p class="text-muted">Маршрутов</p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="display-4 text-success">{{ stats.total_points }}</div>
+                            <p class="text-muted">Точек интереса</p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="display-4 text-warning">{{ stats.total_reviews }}</div>
+                            <p class="text-muted">Отзывов</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-body">
-                <h3 class="card-title"><i class="fas fa-cogs"></i> Технологии</h3>
-                <ul>
-                    <li><strong>Backend:</strong> Python 3.11, Django 4.2</li>
-                    <li><strong>База данных:</strong> SQLite (разработка), PostgreSQL (продакшен)</li>
-                    <li><strong>Аналитика:</strong> Plotly для визуализации данных</li>
-                    <li><strong>API:</strong> OpenWeatherMap для получения метеоданных</li>
-                    <li><strong>Frontend:</strong> Bootstrap 5, HTML5, CSS3</li>
-                </ul>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h3 class="card-title">Как это работает?</h3>
+                    <ol class="list-group list-group-numbered">
+                        <li class="list-group-item">Добавьте или выберите маршрут</li>
+                        <li class="list-group-item">Система анализирует погоду и парковки</li>
+                        <li class="list-group-item">Получите рекомендацию и оценку маршрута</li>
+                        <li class="list-group-item">Поделитесь отзывом после похода</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <a href="{% url 'home' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-home"></i> На главную
+                </a>
+                <a href="{% url 'hike_create' %}" class="btn btn-success btn-lg ms-2">
+                    <i class="fas fa-plus-circle"></i> Добавить маршрут
+                </a>
             </div>
         </div>
     </div>

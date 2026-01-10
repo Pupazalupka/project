@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Рекомендации - HikeWeather Advisor{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Рекомендуемые маршруты</h1>
+    <p class="lead">Лучшие маршруты на основе погоды и доступности</p>
+    
+    {% if recommended_hikes %}
+        <div class="row">
+            {% for hike in recommended_hikes %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ hike.title }}</h5>
+                        <p class="card-text">{{ hike.description|truncatechars:100 }}</p>
+                        <p>
+                            <span class="badge bg-{% if hike.difficulty == 'easy' %}success{% elif hike.difficulty == 'medium' %}warning{% else %}danger{% endif %}">
+                                {{ hike.get_difficulty_display }}
+                            </span>
+                            <span class="badge bg-info ms-2">
+                                Рейтинг: {% if hike.avg_rating %}{{ hike.avg_rating|floatformat:1 }}{% else %}Нет оценок{% endif %}
+                            </span>
+                        </p>
+                        <a href="{% url 'hike_detail' hike.id %}" class="btn btn-primary">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Пока нет рекомендуемых маршрутов. Добавьте маршруты и отзывы!
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
