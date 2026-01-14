@@ -42,21 +42,33 @@ class PointOfInterestForm(forms.ModelForm):
 
 
 class ReviewForm(forms.ModelForm):
-    """Форма для отзывов"""
-    
+    """Форма для отзыва с оценкой"""
     class Meta:
         model = Review
         fields = ['rating', 'text']
         widgets = {
+            'rating': forms.RadioSelect(attrs={'class': 'star-rating'}),
             'text': forms.Textarea(attrs={
-                'rows': 3,
-                'placeholder': 'Поделитесь впечатлениями о маршруте...'
+                'rows': 4, 
+                'placeholder': 'Поделитесь впечатлениями о маршруте...',
+                'class': 'form-control'
             }),
-            'rating': forms.RadioSelect(choices=Review.RATING_CHOICES),
         }
         labels = {
-            'text': 'Ваш отзыв',
+            'rating': 'Ваша оценка',
+            'text': 'Комментарий (необязательно)',
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Кастомизируем отображение оценок
+        self.fields['rating'].widget.choices = [
+            (1, '★☆☆☆☆ - Ужасно'),
+            (2, '★★☆☆☆ - Плохо'),
+            (3, '★★★☆☆ - Нормально'),
+            (4, '★★★★☆ - Хорошо'),
+            (5, '★★★★★ - Отлично'),
+        ]
 
 
 class UserRegistrationForm(forms.ModelForm):
