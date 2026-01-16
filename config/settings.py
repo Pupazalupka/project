@@ -33,7 +33,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-for-dev')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'hikeweather-advisor.onrender.com/',
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+]
 
 
 # Application definition
@@ -142,22 +147,3 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'    # Папка для продакшен
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Проверка на production
-import os
-
-# Render автоматически устанавливает RENDER
-if os.environ.get('RENDER'):
-    DEBUG = False  # Обязательно для продакшена
-    ALLOWED_HOSTS = ['hikeweather-advisor.onrender.com', 'localhost', '127.0.0.1']
-    
-    # Настройка статических файлов через WhiteNoise
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-    MIDDLEWARE = [
-        'django.middleware.security.SecurityMiddleware',
-        'whitenoise.middleware.WhiteNoiseMiddleware',  # <- В самое начало!
-        # ... остальные middleware
-    ]
-else:
-    # Локальная разработка
-    DEBUG = True
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
