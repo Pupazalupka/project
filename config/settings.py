@@ -10,11 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 from pathlib import Path
+
+# Проверка, работаем ли на Render
+IS_RENDER = os.environ.get('RENDER') is not None
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -137,3 +141,23 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'    # Папка для продакшен
 # Медиа файлы
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Проверка на production
+import os
+
+# Render автоматически устанавливает RENDER
+if os.environ.get('RENDER'):
+    DEBUG = False  # Обязательно для продакшена
+    ALLOWED_HOSTS = ['hikeweather-advisor.onrender.com', 'localhost', '127.0.0.1']
+    
+    # Настройка статических файлов через WhiteNoise
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    MIDDLEWARE = [
+        'django.middleware.security.SecurityMiddleware',
+        'whitenoise.middleware.WhiteNoiseMiddleware',  # <- В самое начало!
+        # ... остальные middleware
+    ]
+else:
+    # Локальная разработка
+    DEBUG = True
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']

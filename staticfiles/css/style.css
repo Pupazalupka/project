@@ -1,0 +1,67 @@
+body {
+    padding-top: 70px;
+    background-color: #f8f9fa;
+}
+.navbar-brand {
+    font-weight: bold;
+    color: #2c7873 !important;
+}
+.card {
+    transition: transform 0.2s;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+.difficulty-badge {
+    font-size: 0.8em;
+    padding: 0.3em 0.6em;
+}
+.rating-stars {
+    color: #ffc107;
+}
+footer {
+    margin-top: 50px;
+    padding: 20px 0;
+    background-color: #343a40;
+    color: white;
+}
+.star-rating-buttons .form-check-input {
+    display: none;
+}
+
+.star-rating-buttons .star-label {
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+    margin-bottom: 5px;
+}
+
+.star-rating-buttons .star-label:hover {
+    border-color: #ffc107;
+    background-color: #fff9e6;
+}
+
+.star-rating-buttons .form-check-input:checked + .star-label {
+    border-color: #ffc107;
+    background-color: #fff9e6;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
+}
+
+.star-rating-buttons .stars {
+    color: #ffc107;
+    font-size: 1.2em;
+}
+
+.rating-display .fa-star {
+    font-size: 1.5em;
+}
+
+/* Подсветка звёзд при наведении */
+.star-rating-buttons .star-label:hover .stars {
+    color: #ffc107;
+}
