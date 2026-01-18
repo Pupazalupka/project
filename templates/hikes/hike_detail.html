@@ -1,164 +1,261 @@
-<!-- УПРОЩЕННАЯ ВЕРСИЯ БЕЗ СЛОЖНОГО CSS -->
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}{{ hike.title }} - HikeWeather Advisor{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h1>{{ hike.title }}</h1>
-    <p>{{ hike.description }}</p>
-    
+    <!-- Заголовок маршрута -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold">{{ hike.title }}</h1>
+            <p class="lead">{{ hike.description }}</p>
+            <div class="d-flex gap-2 mb-3 flex-wrap">
+                <span class="badge difficulty-badge badge-{{ hike.difficulty }}">
+                    {{ hike.get_difficulty_display }}
+                </span>
+                <span class="badge bg-secondary">{{ hike.length_km }} км</span>
+                <span class="badge bg-info">{{ hike.estimated_time_h }} ч</span>
+                {% if hike.avg_rating %}
+                <span class="badge bg-warning text-dark">
+                    <i class="fas fa-star"></i> {{ hike.avg_rating|floatformat:1 }}
+                </span>
+                {% endif %}
+                <span class="badge bg-light text-dark">
+                    <i class="fas fa-user"></i> {{ hike.author.username }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Погода и парковка -->
     <div class="row mt-4">
-        <div class="col-md-8">
-            <h3>Прогноз погоды (API демо)</h3>
-            <div class="alert alert-info">
-                <p><strong>Температура:</strong> {{ weather.temperature }}°C</p>
-                <p><strong>Влажность:</strong> {{ weather.humidity }}%</p>
-                <p><strong>Ветер:</strong> {{ weather.wind_speed }} м/с</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <h3>Статус парковки (API демо)</h3>
-            <div class="alert alert-success">
-                <p><strong>Статус:</strong> {{ parking.status_text }}</p>
-                <p><strong>Балл:</strong> {{ parking.score }}/100</p>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="mt-3">
-    <form method="post" action="{% url 'toggle_favorite' hike.id %}" class="d-inline">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-{% if is_favorited %}danger{% else %}outline-danger{% endif %}">
-            <i class="fas fa-heart"></i>
-            {% if is_favorited %}Удалить из избранного{% else %}В избранное{% endif %}
-        </button>
-    </form>
-</div>
-<div class="card mt-4 shadow">
-    <div class="card-header bg-primary text-white">
-        <h4 class="mb-0"><i class="fas fa-star"></i> Оценить маршрут</h4>
-    </div>
-    
-    <div class="card-body">
-        {% if user.is_authenticated %}
-            {% if user_review %}
-                <!-- Пользователь уже оставил отзыв -->
-                <div class="alert alert-success">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h5>Вы уже оценили этот маршрут</h5>
-                            <div class="rating-display my-2">
-                                {% for i in "12345"|make_list %}
-                                    {% if forloop.counter <= user_review.rating %}
-                                        <i class="fas fa-star text-warning fa-lg"></i>
-                                    {% else %}
-                                        <i class="far fa-star text-muted fa-lg"></i>
-                                    {% endif %}
-                                {% endfor %}
-                                <span class="ms-2 fw-bold">{{ user_review.rating }}/5</span>
-                            </div>
-                            {% if user_review.text %}
-                                <p class="mt-3 mb-2"><strong>Ваш комментарий:</strong></p>
-                                <p class="border-start border-3 border-primary ps-3 py-2">
-                                    {{ user_review.text }}
-                                </p>
-                            {% endif %}
-                            <small class="text-muted">
-                                <i class="far fa-clock"></i> {{ user_review.created_at|date:"d.m.Y H:i" }}
-                            </small>
+        <div class="col-lg-8 mb-4">
+            <div class="card hike-card">
+                <div class="card-header hike-card-header">
+                    <h3 class="mb-0 weather-alert-icon">Прогноз погоды (API демо)</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>🌡️ Температура:</strong> {{ weather.temperature|default:"—" }}°C</p>
+                            <p><strong>🤔 Ощущается как:</strong> {{ weather.feels_like|default:"—" }}°C</p>
+                            <p><strong>📝 Описание:</strong> {{ weather.description|default:"Нет данных" }}</p>
                         </div>
-                        <button class="btn btn-sm btn-outline-primary" 
-                                type="button" 
-                                data-bs-toggle="collapse" 
-                                data-bs-target="#editReview">
-                            <i class="fas fa-edit"></i> Изменить
-                        </button>
+                        <div class="col-md-6">
+                            <p><strong>💧 Влажность:</strong> {{ weather.humidity|default:"—" }}%</p>
+                            <p><strong>💨 Ветер:</strong> {{ weather.wind_speed|default:"—" }} м/с</p>
+                            <p><strong>🌧️ Вероятность осадков:</strong> {{ weather.precipitation_chance|default:"—" }}%</p>
+                            <p><strong>⭐ Качество погоды:</strong> {{ weather_score|default:"—" }}/100 баллов</p>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- Форма редактирования (скрытая) -->
-                <div class="collapse mt-3" id="editReview">
-                    <h5>Редактировать отзыв</h5>
-            {% endif %}
-            
-            <!-- Форма оценки (показывается если нет отзыва или при редактировании) -->
-            <form method="post" class="{% if user_review %}mt-3{% endif %}">
-                {% csrf_token %}
-                
-                <!-- Выбор оценки -->
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Ваша оценка:</label>
-                    <div class="star-rating-buttons">
-                        {% for value, text in review_form.rating.field.choices %}
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" 
-                                   name="rating" id="rating{{ value }}" 
-                                   value="{{ value }}" 
-                                   {% if user_review and user_review.rating == value %}checked{% endif %}
-                                   required>
-                            <label class="form-check-label star-label" for="rating{{ value }}">
-                                <span class="stars">
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card hike-card shadow-hover">
+                <div class="card-header hike-card-header">
+                    <h3 class="mb-0 parking-alert-icon">Статус парковки (API демо)</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>🅿️ Статус:</strong> {{ parking.status_text|default:"Нет данных" }}</p>
+                    <p><strong>📝 Описание:</strong> {{ parking.description|default:"—" }}</p>
+                    <p><strong>🎯 Балл доступности:</strong> {{ parking.score|default:"—" }}/100</p>
+                    <p class="mb-0"><small>🕒 Обновлено: {{ parking.last_checked|default:"—" }}</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Общий анализ -->
+    <div class="row mt-4 fade-in">
+        <div class="col-12">
+            <div class="card hike-card shadow-hover">
+                <div class="card-header hike-card-header">
+                    <h3 class="mb-0">📊 Общий анализ маршрута</h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="card-title">Общий балл: {{ overall_score.overall_score|default:"0" }}/100</h4>
+                    
+                    <!-- Прогресс-бар -->
+                    <div class="hike-progress-container" data-score="{{ overall_score.overall_score|default:0 }}">
+                        <div class="hike-progress-bar"></div>
+                        <span class="hike-progress-text">{{ overall_score.overall_score|default:"0" }}%</span>
+                    </div>
+                    
+                    <!-- Детализация баллов -->
+                    <div class="row mt-4">
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-primary h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">🌤️ Погода</h5>
+                                    <p class="card-text fs-4">{{ overall_score.breakdown.weather|default:"0/100 (50%)" }}</p>
+                                    <small class="text-muted">Вес: 50%</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-success h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">🅿️ Парковка</h5>
+                                    <p class="card-text fs-4">{{ overall_score.breakdown.parking|default:"0/100 (30%)" }}</p>
+                                    <small class="text-muted">Вес: 30%</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-info h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">🥾 Сложность</h5>
+                                    <p class="card-text fs-4">{{ overall_score.breakdown.difficulty|default:"0/100 (20%)" }}</p>
+                                    <small class="text-muted">Вес: 20%</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка избранного -->
+    <div class="d-flex justify-content-center mt-4 mb-5 fade-in">
+        <form method="post" action="{% url 'toggle_favorite' hike.id %}" class="d-inline favorite-form">
+            {% csrf_token %}
+            <button type="submit" class="btn favorite-btn btn-{% if is_favorited %}danger{% else %}outline-danger{% endif %} btn-lg px-4 py-3">
+                <i class="fas fa-heart me-2"></i>
+                {% if is_favorited %}Удалить из избранного{% else %} Добавить в избранное{% endif %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Форма оценки -->
+    <div class="card hike-card mt-4 shadow-hover">
+        <div class="card-header hike-card-header">
+            <h4 class="mb-0"><i class="fas fa-star me-2"></i> Оценить маршрут</h4>
+        </div>
+        
+        <div class="card-body rating-section">
+            {% if user.is_authenticated %}
+                {% if user_review %}
+                    <!-- Существующий отзыв -->
+                    <div class="alert alert-success">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5>✅ Вы уже оценили этот маршрут</h5>
+                                <div class="rating-display my-3">
                                     {% for i in "12345"|make_list %}
-                                        {% if forloop.counter <= value %}
-                                            <i class="fas fa-star"></i>
+                                        {% if forloop.counter <= user_review.rating %}
+                                            <i class="fas fa-star text-warning fa-lg"></i>
                                         {% else %}
-                                            <i class="far fa-star"></i>
+                                            <i class="far fa-star text-muted fa-lg"></i>
                                         {% endif %}
                                     {% endfor %}
-                                </span>
-                                <span class="rating-text ms-2">{{ text }}</span>
-                            </label>
+                                    <span class="ms-2 fw-bold fs-5">{{ user_review.rating }}/5</span>
+                                </div>
+                                {% if user_review.text %}
+                                    <p class="mt-3 mb-2"><strong>💬 Ваш комментарий:</strong></p>
+                                    <p class="review-comment">
+                                        {{ user_review.text }}
+                                    </p>
+                                {% endif %}
+                                <small class="text-muted">
+                                    <i class="far fa-clock me-1"></i> {{ user_review.created_at|date:"d.m.Y H:i" }}
+                                </small>
+                            </div>
+                            <button class="btn btn-outline-primary" 
+                                    type="button" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#editReview">
+                                <i class="fas fa-edit me-1"></i> Изменить
+                            </button>
                         </div>
-                        {% endfor %}
+                    </div>
+                    
+                    <!-- Форма редактирования -->
+                    <div class="collapse mt-4" id="editReview">
+                        <h5>✏️ Редактировать отзыв</h5>
+                {% endif %}
+                
+                <!-- Форма оценки -->
+                <form method="post" class="{% if user_review %}mt-3{% endif %}">
+                    {% csrf_token %}
+                    
+                    <!-- Оценка -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold fs-5">⭐ Ваша оценка:</label>
+                        <div class="star-rating-buttons">
+                            {% for value, text in review_form.rating.field.choices %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" 
+                                       name="rating" id="rating{{ value }}" 
+                                       value="{{ value }}" 
+                                       {% if user_review and user_review.rating == value %}checked{% endif %}
+                                       required>
+                                <label class="form-check-label star-label" for="rating{{ value }}">
+                                    <span class="stars">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= value %}
+                                                <i class="fas fa-star"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </span>
+                                    <span class="rating-text">{{ text }}</span>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Комментарий -->
+                    <div class="mb-4">
+                        <label for="id_text" class="form-label fw-bold fs-5">💬 Комментарий (необязательно):</label>
+                        <textarea class="form-control" id="id_text" name="text" 
+                                  rows="4" placeholder="Поделитесь впечатлениями о маршруте...">{% if user_review %}{{ user_review.text }}{% endif %}</textarea>
+                    </div>
+                    
+                    <!-- Кнопки -->
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary px-4 py-2">
+                            <i class="fas fa-paper-plane me-2"></i> 
+                            {% if user_review %}Обновить отзыв{% else %}Отправить оценку{% endif %}
+                        </button>
+                        {% if user_review %}
+                            <button type="button" class="btn btn-outline-secondary px-4 py-2" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#editReview">
+                                Отмена
+                            </button>
+                        {% endif %}
+                    </div>
+                </form>
+                
+                {% if user_review %}
+                    </div> <!-- закрываем collapse -->
+                {% endif %}
+                
+            {% else %}
+                <!-- Для неавторизованных -->
+                <div class="text-center py-5">
+                    <div class="display-1 text-muted mb-4">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3>Хотите оценить маршрут?</h3>
+                    <p class="text-muted mb-4 fs-5">Войдите, чтобы оставить отзыв и помочь другим туристам</p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="{% url 'login' %}" class="btn btn-primary px-4 py-2">
+                            <i class="fas fa-sign-in-alt me-2"></i> Войти
+                        </a>
+                        <a href="{% url 'register' %}" class="btn btn-outline-primary px-4 py-2">
+                            <i class="fas fa-user-plus me-2"></i> Зарегистрироваться
+                        </a>
                     </div>
                 </div>
-                
-                <!-- Комментарий -->
-                <div class="mb-4">
-                    <label for="id_text" class="form-label fw-bold">Комментарий (необязательно):</label>
-                    <textarea class="form-control" id="id_text" name="text" 
-                              rows="4" placeholder="Поделитесь впечатлениями о маршруте...">{% if user_review %}{{ user_review.text }}{% endif %}</textarea>
-                </div>
-                
-                <!-- Кнопки -->
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> 
-                        {% if user_review %}Обновить отзыв{% else %}Отправить оценку{% endif %}
-                    </button>
-                    {% if user_review %}
-                        <button type="button" class="btn btn-outline-secondary" 
-                                data-bs-toggle="collapse" 
-                                data-bs-target="#editReview">
-                            Отмена
-                        </button>
-                    {% endif %}
-                </div>
-            </form>
-            
-            {% if user_review %}
-                </div> <!-- закрываем collapse -->
             {% endif %}
-            
-        {% else %}
-            <!-- Для неавторизованных пользователей -->
-            <div class="text-center py-4">
-                <div class="display-4 text-muted mb-3">
-                    <i class="fas fa-star"></i>
-                </div>
-                <h4>Хотите оценить маршрут?</h4>
-                <p class="text-muted mb-4">Войдите, чтобы оставить отзыв и помочь другим туристам</p>
-                <div class="d-flex justify-content-center gap-3">
-                    <a href="{% url 'admin:login' %}" class="btn btn-primary">
-                        <i class="fas fa-sign-in-alt"></i> Войти
-                    </a>
-                    <a href="{% url 'register' %}" class="btn btn-outline-primary">
-                        <i class="fas fa-user-plus"></i> Зарегистрироваться
-                    </a>
-                </div>
-            </div>
-        {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -8,8 +8,8 @@
     <div class="jumbotron bg-light p-5 rounded-3 mb-4">
         <div class="row align-items-center">
             <div class="col-md-8">
-                <h1 class="display-4">🌤️ Найдите идеальный день для похода!</h1>
-                <p class="lead mt-3">
+                <h1 class="display-4 fw-bolder mb-4">🌤️ Найдите идеальный день для похода!</h1>
+                <p class="lead mt-3 fs-5">
                     HikeWeather Advisor анализирует погодные условия, доступность парковок и сложность маршрутов, 
                     чтобы помочь вам спланировать безопасное и комфортное путешествие.
                 </p>
@@ -29,9 +29,9 @@
                 </div>
             </div>
             <div class="col-md-4 text-center">
-                <div class="bg-white p-4 rounded shadow">
-                    <h5><i class="fas fa-chart-line text-primary"></i> Активная статистика</h5>
-                    <p class="fs-1 mb-0">{{ page_obj.paginator.count }}</p>
+                <div class="bg-white p-4 rounded border">
+                    <h5 class="text-dark"><i class="fas fa-chart-line text-primary"></i> Активная статистика</h5>
+                    <p class="fs-1 mb-0 fw-bold">{{ page_obj.paginator.count }}</p>
                     <p class="text-muted">маршрутов доступно</p>
                 </div>
             </div>

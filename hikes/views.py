@@ -4,6 +4,7 @@ from django.contrib.auth import login
 from django.contrib import messages
 from django.db.models import Q, Count, Avg
 from django.core.paginator import Paginator
+from django.http import JsonResponse  # <-- ДОБАВЛЕНО
 
 import random
 from datetime import datetime, timedelta
@@ -228,7 +229,31 @@ def hike_detail(request, hike_id):
         ),
         id=hike_id
     )
+
+    weather_service = WeatherService()
+    weather_data = weather_service.get_demo_weather_data(
+        hike.start_point_lat, 
+        hike.start_point_lon
+    )
+    weather_score = weather_service.get_weather_quality_score(weather_data)
     
+    parking_service = ParkingService()
+    parking_data = parking_service.get_parking_status(
+        hike.start_point_lat, 
+        hike.start_point_lon
+    )
+    
+    route_analyzer = RouteAnalyzer()
+    overall_score = route_analyzer.calculate_overall_score(
+        route=hike,
+        weather_score=weather_score,
+        parking_score=parking_data['score']
+    )
+    
+    is_favorited = False
+    if request.user.is_authenticated:
+        is_favorited = hike.favorited_by.filter(id=request.user.id).exists()
+
     # Проверяем, оставлял ли пользователь отзыв
     user_review = None
     if request.user.is_authenticated:
@@ -261,8 +286,6 @@ def hike_detail(request, hike_id):
             else:
                 review_form = ReviewForm()
     
-    # ... остальной код (погода, парковка, отзывы других пользователей) ...
-    
     # Получаем отзывы других пользователей
     reviews = hike.reviews.exclude(user=request.user).select_related('user').order_by('-created_at')[:10]
     
@@ -271,7 +294,12 @@ def hike_detail(request, hike_id):
         'reviews': reviews,
         'user_review': user_review,
         'review_form': review_form,
-        # ... остальные переменные ...
+        'is_favorited': is_favorited,
+        'weather': weather_data['current'],
+        'weather_forecast': weather_data['forecast'],
+        'parking': parking_data,
+        'overall_score': overall_score,
+        'weather_score': weather_score,
     }
     
     return render(request, 'hikes/hike_detail.html', context)
@@ -360,6 +388,7 @@ def about(request):
     
     return render(request, 'hikes/about.html', {'stats': stats})
 
+
 @login_required
 def my_hikes(request):
     """Страница маршрутов текущего пользователя"""
@@ -380,6 +409,7 @@ def my_hikes(request):
     }
     return render(request, 'hikes/my_hikes.html', context)
 
+
 @login_required
 def toggle_favorite(request, hike_id):
     """Добавить/удалить маршрут из избранного (AJAX/обычный)"""
@@ -396,11 +426,16 @@ def toggle_favorite(request, hike_id):
     
     # Для AJAX запросов
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({
+        response = JsonResponse({
             'is_favorite': is_favorite,
             'message': message,
             'favorites_count': hike.favorited_by.count()
         })
+        # Отключаем кэширование
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+        return response
     
     # Для обычных запросов
     messages.info(request, message)

@@ -1,67 +1,357 @@
+/* ===== BASE STYLES ===== */
 body {
     padding-top: 70px;
-    background-color: #f8f9fa;
+    background: #f8fafc;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    color: #374151;
+    line-height: 1.6;
 }
-.navbar-brand {
-    font-weight: bold;
-    color: #2c7873 !important;
+
+/* ===== НАВИГАЦИЯ ===== */
+.navbar {
+    background: #374151;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
 }
-.card {
-    transition: transform 0.2s;
-    border: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+.navbar-brand i {
+    color: #93c5fd;
 }
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+
+/* ===== ЗАГОЛОВКИ КАРТОЧЕК МАРШРУТОВ ===== */
+.hike-card-header {
+    background: #4b5563;
+    color: white;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-bottom: none;
 }
-.difficulty-badge {
-    font-size: 0.8em;
-    padding: 0.3em 0.6em;
-}
-.rating-stars {
-    color: #ffc107;
-}
-footer {
-    margin-top: 50px;
-    padding: 20px 0;
-    background-color: #343a40;
+
+/* ===== БЕЙДЖИ СЛОЖНОСТИ ===== */
+.badge-easy {
+    background: #059669;
     color: white;
 }
-.star-rating-buttons .form-check-input {
-    display: none;
+
+.badge-medium {
+    background: #d97706;
+    color: white;
 }
 
-.star-rating-buttons .star-label {
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 2px solid #e9ecef;
+.badge-hard {
+    background: #dc2626;
+    color: white;
+}
+
+/* ===== ПРОГРЕСС-БАР АНАЛИЗА ===== */
+.hike-progress-bar {
+    background: linear-gradient(90deg, #3b82f6 0%, #059669 100%);
+}
+
+/* Цвета прогресса */
+.progress-score-low {
+    background: linear-gradient(90deg, #dc2626 0%, #d97706 100%);
+}
+
+.progress-score-medium {
+    background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%);
+}
+
+.progress-score-high {
+    background: linear-gradient(90deg, #059669 0%, #3b82f6 100%);
+}
+
+/* ===== КАРТОЧКИ АНАЛИЗА НА ДЕТАЛЬНОЙ СТРАНИЦЕ ===== */
+.card.border-primary {
+    border: 2px solid #3b82f6 !important;
+    background: #eff6ff;
+}
+
+.card.border-success {
+    border: 2px solid #059669 !important;
+    background: #ecfdf5;
+}
+
+.card.border-info {
+    border: 2px solid #0ea5e9 !important;
+    background: #f0f9ff;
+}
+
+.card.border-primary:hover,
+.card.border-success:hover,
+.card.border-info:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+}
+
+/* ===== КНОПКИ ===== */
+.btn-primary {
+    background: #3b82f6;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-outline-primary {
+    color: #3b82f6;
+    border-color: #3b82f6;
+    background: white;
+}
+
+.btn-outline-primary:hover {
+    background: #3b82f6;
+    color: white;
+    border-color: transparent;
+}
+
+.btn-success {
+    background: #059669;
+    border: none;
+}
+
+.btn-success:hover {
+    background: #047857;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.btn-danger {
+    background: #dc2626;
+    border: none;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+/* ===== КНОПКА ИЗБРАННОГО ===== */
+.favorite-btn.btn-danger {
+    background: #dc2626;
+}
+
+.favorite-btn.btn-outline-danger {
+    background: white;
+    color: #dc2626;
+    border-color: #dc2626;
+}
+
+.favorite-btn.btn-outline-danger:hover {
+    background: #dc2626;
+    color: white;
+    border-color: transparent;
+}
+
+/* ===== ЗВЕЗДОЧКИ РЕЙТИНГА ===== */
+.rating-stars .fas.fa-star {
+    color: #f59e0b;
+}
+
+.rating-display .fas.fa-star {
+    color: #f59e0b;
+}
+
+.stars {
+    color: #f59e0b;
+}
+
+/* ===== КОММЕНТАРИИ ОТЗЫВОВ - ИСПРАВЛЕННЫЕ ===== */
+.review-comment {
+    background: #f8fafc;
+    border-left: 4px solid #3b82f6;
+    padding: 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #4b5563;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== ПАГИНАЦИЯ ===== */
+.pagination .page-link:hover {
+    background: #3b82f6;
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+}
+
+.pagination .page-item.active .page-link {
+    background: #3b82f6;
+    border: none;
+}
+
+/* ===== ФОРМЫ ===== */
+.form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* ===== СЕКЦИЯ ОЦЕНКИ ===== */
+.rating-section {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== ЗАГОЛОВКИ ===== */
+h1.display-5 {
+    color: #1f2937;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+/* ЖИРНОЕ ПРИВЕТСТВИЕ */
+.display-4.fw-bolder {
+    font-weight: 900 !important;
+    color: #1f2937;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== УВЕДОМЛЕНИЯ ===== */
+.alert-success {
+    background: #059669;
+    color: white;
+    border: none;
+}
+
+/* ===== ЦВЕТА ===== */
+.bg-primary {
+    background-color: #3b82f6 !important;
+}
+
+.bg-success {
+    background-color: #059669 !important;
+}
+
+.bg-info {
+    background-color: #0ea5e9 !important;
+}
+
+.bg-warning {
+    background-color: #f59e0b !important;
+}
+
+.bg-danger {
+    background-color: #dc2626 !important;
+}
+
+.text-primary {
+    color: #3b82f6 !important;
+}
+
+/* ===== КАРТОЧКИ ===== */
+.card {
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
-    margin-bottom: 5px;
 }
 
-.star-rating-buttons .star-label:hover {
-    border-color: #ffc107;
-    background-color: #fff9e6;
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* ===== БЛОК НА ГЛАВНОЙ ===== */
+.jumbotron {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-left: 5px solid #3b82f6;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== ЗВЕЗДЫ В ФОРМЕ ОЦЕНКИ ===== */
+.star-label:hover {
+    transform: translateX(5px);
+    border-color: #3b82f6;
+    background: #eff6ff;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
 }
 
 .star-rating-buttons .form-check-input:checked + .star-label {
-    border-color: #ffc107;
-    background-color: #fff9e6;
-    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
+    border-color: #059669;
+    background: #ecfdf5;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.15);
+    transform: translateX(8px);
 }
 
-.star-rating-buttons .stars {
-    color: #ffc107;
-    font-size: 1.2em;
+/* ===== ИКОНКИ ===== */
+.weather-alert-icon::before {
+    content: "🌤️";
+    margin-right: 10px;
+    font-size: 1.3em;
 }
 
-.rating-display .fa-star {
-    font-size: 1.5em;
+.parking-alert-icon::before {
+    content: "🅿️";
+    margin-right: 10px;
+    font-size: 1.3em;
 }
 
-/* Подсветка звёзд при наведении */
-.star-rating-buttons .star-label:hover .stars {
-    color: #ffc107;
+/* ===== ПРОГРЕСС-БАР ===== */
+.hike-progress-container {
+    border: 1px solid #e5e7eb;
+    background: #f8fafc;
+}
+
+.hike-progress-text {
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* ===== ТЕКСТ В КАРТОЧКАХ ===== */
+.card-body strong {
+    color: #1f2937;
+}
+
+.card-title {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.card-text {
+    color: #1f2937;
+}
+
+/* ===== НАВИГАЦИОННЫЕ ССЫЛКИ ===== */
+.nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.nav-link:hover {
+    background: rgba(59, 130, 246, 0.2);
+    color: white !important;
+}
+
+.nav-link.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+/* ===== БЕЙДЖИ В МАРШРУТАХ ===== */
+.bg-secondary {
+    background: #6b7280 !important;
+}
+
+/* ===== АВТОРСКИЙ СТИЛЬ ДЛЯ ПРИВЕТСТВИЯ ===== */
+.display-4.fw-bolder {
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.display-4.fw-bolder::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6 0%, #059669 100%);
+    border-radius: 2px;
 }

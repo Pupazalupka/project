@@ -145,42 +145,4 @@
     {% endif %}
 </div>
 
-<!-- JavaScript для AJAX добавления в избранное -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Обработка формы избранного
-    const favoriteForms = document.querySelectorAll('form[action*="toggle-favorite"]');
-    
-    favoriteForms.forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const url = this.action;
-            
-            fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    // Показать сообщение
-                    alert(data.message);
-                    // Перезагрузить страницу
-                    window.location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Fallback: отправить форму обычным способом
-                this.submit();
-            });
-        });
-    });
-});
-</script>
 {% endblock %}
