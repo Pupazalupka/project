@@ -17,6 +17,16 @@ from dotenv import load_dotenv
 load_dotenv()
 from pathlib import Path
 
+import dj_database_url
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600
+    )
+}
+
+
 # Проверка, работаем ли на Render
 IS_RENDER = os.environ.get('RENDER') is not None
 
