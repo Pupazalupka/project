@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Вход - HikeWeather Advisor{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-sign-in-alt"></i> Вход в систему</h3>
+                </div>
+                <div class="card-body">
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i> Неправильное имя пользователя или пароль.
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Имя пользователя</label>
+                            <input type="text" 
+                                   name="username" 
+                                   class="form-control" 
+                                   id="username" 
+                                   required 
+                                   autofocus
+                                   placeholder="Введите ваше имя пользователя">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Пароль</label>
+                            <input type="password" 
+                                   name="password" 
+                                   class="form-control" 
+                                   id="password" 
+                                   required
+                                   placeholder="Введите ваш пароль">
+                        </div>
+                        
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt"></i> Войти
+                            </button>
+                        </div>
+                        
+                        <div class="text-center">
+                            <p class="mb-2">
+                                Нет аккаунта? 
+                                <a href="{% url 'register' %}" class="text-decoration-none">
+                                    Зарегистрируйтесь
+                                </a>
+                            </p>
+                            <p class="mb-0">
+                                <a href="{% url 'home' %}" class="text-decoration-none">
+                                    <i class="fas fa-arrow-left"></i> Вернуться на главную
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6><i class="fas fa-info-circle text-info"></i> Для доступа в админку:</h6>
+                    <p class="mb-0 small text-muted">
+                        Используйте учётную запись суперпользователя или попросите администратора предоставить доступ.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

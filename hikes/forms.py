@@ -1,11 +1,9 @@
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import HikeRoute, PointOfInterest, Review
-
+from .models import HikeRoute, Review
 
 class HikeRouteForm(forms.ModelForm):
-    """Форма для создания и редактирования маршрутов"""
-    
     class Meta:
         model = HikeRoute
         fields = [
@@ -15,73 +13,23 @@ class HikeRouteForm(forms.ModelForm):
             'finish_point_lat', 'finish_point_lon'
         ]
         widgets = {
-            'description': forms.Textarea(attrs={
-                'rows': 4,
-                'placeholder': 'Подробно опишите маршрут, что интересного можно увидеть...'
-            }),
-            'title': forms.TextInput(attrs={
-                'placeholder': 'Например: "Поход к озеру Горное"'
-            }),
+            'description': forms.Textarea(attrs={'rows': 4}),
         }
-        labels = {
-            'length_km': 'Протяженность (км)',
-            'estimated_time_h': 'Примерное время (часы)',
-        }
-
-
-class PointOfInterestForm(forms.ModelForm):
-    """Форма для создания точек интереса"""
-    
-    class Meta:
-        model = PointOfInterest
-        fields = ['name', 'description', 'coordinates_lat', 'coordinates_lon', 'type', 'routes']
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
-            'routes': forms.SelectMultiple(attrs={'class': 'form-control'}),
-        }
-
 
 class ReviewForm(forms.ModelForm):
-    """Форма для отзыва с оценкой"""
     class Meta:
         model = Review
         fields = ['rating', 'text']
         widgets = {
-            'rating': forms.RadioSelect(attrs={'class': 'star-rating'}),
-            'text': forms.Textarea(attrs={
-                'rows': 4, 
-                'placeholder': 'Поделитесь впечатлениями о маршруте...',
-                'class': 'form-control'
-            }),
+            'rating': forms.RadioSelect(),
+            'text': forms.Textarea(attrs={'rows': 4}),
         }
-        labels = {
-            'rating': 'Ваша оценка',
-            'text': 'Комментарий (необязательно)',
-        }
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Кастомизируем отображение оценок
-        self.fields['rating'].widget.choices = [
-            (1, '★☆☆☆☆ - Ужасно'),
-            (2, '★★☆☆☆ - Плохо'),
-            (3, '★★★☆☆ - Нормально'),
-            (4, '★★★★☆ - Хорошо'),
-            (5, '★★★★★ - Отлично'),
-        ]
 
-
-class UserRegistrationForm(forms.ModelForm):
-    """Форма регистрации пользователя"""
-    password = forms.CharField(widget=forms.PasswordInput, label='Пароль')
-    password2 = forms.CharField(widget=forms.PasswordInput, label='Повторите пароль')
+class UserRegistrationForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    first_name = forms.CharField(max_length=30, required=False)
+    last_name = forms.CharField(max_length=30, required=False)
     
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name']
-    
-    def clean_password2(self):
-        cd = self.cleaned_data
-        if cd['password'] != cd['password2']:
-            raise forms.ValidationError('Пароли не совпадают.')
-        return cd['password2']
+        fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2']

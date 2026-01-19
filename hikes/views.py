@@ -286,8 +286,11 @@ def hike_detail(request, hike_id):
             else:
                 review_form = ReviewForm()
     
-    # Получаем отзывы других пользователей
-    reviews = hike.reviews.exclude(user=request.user).select_related('user').order_by('-created_at')[:10]
+    # Получаем отзывы других пользователей - ИСПРАВЛЕННАЯ СТРОКА
+    if request.user.is_authenticated:
+        reviews = hike.reviews.exclude(user=request.user).select_related('user').order_by('-created_at')[:10]
+    else:
+        reviews = hike.reviews.all().select_related('user').order_by('-created_at')[:10]
     
     context = {
         'hike': hike,
@@ -345,14 +348,16 @@ def favorites(request):
 
 def register(request):
     """Регистрация пользователя"""
+    if request.user.is_authenticated:
+        return redirect('home')
+        
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password'])
+            user = form.save()
+            user.email = form.cleaned_data['email']
             user.save()
             
-            # Автоматический вход после регистрации
             login(request, user)
             messages.success(request, 'Регистрация прошла успешно!')
             return redirect('home')
@@ -360,7 +365,6 @@ def register(request):
         form = UserRegistrationForm()
     
     return render(request, 'hikes/register.html', {'form': form})
-
 
 def recommendations(request):
     """Страница рекомендаций маршрутов"""
